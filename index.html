@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <!-- STRICT VIEWPORT LOCK: meta tag alone is not fully reliable on Android —
+         see systemGuards() in jarvis-api-client.js for the JS-level backup -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="theme-color" content="#050811">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>J.A.R.V.I.S. OS | Mark-8 Advanced</title>
+    <link rel="stylesheet" href="css/os-theme.css">
+</head>
+<body>
+
+    <!-- =======================================================================
+         1. KERNEL PANIC / CRASH SCREEN (Hidden by default)
+         ======================================================================= -->
+    <div id="system-crash-screen" class="hidden">
+        <div class="crash-content">
+            <h1>:( SYSTEM FAILURE</h1>
+            <p>J.A.R.V.I.S. Kernel encountered a critical API desynchronization.</p>
+            <div id="crash-error-log">Awaiting log data...</div>
+            <button id="btn-reboot-system">REBOOT KERNEL</button>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         2. REACTIVE BACKGROUND ENGINE (Canvas)
+         ======================================================================= -->
+    <canvas id="jarvis-canvas" aria-hidden="true"></canvas>
+
+    <!-- =======================================================================
+         3. CINEMATIC BOOT SCREEN
+         ======================================================================= -->
+    <div id="boot-screen">
+        <div class="boot-logo-container">
+            <div class="boot-logo">J.A.R.V.I.S.</div>
+            <div class="boot-subtext">MARK-8 KERNEL</div>
+        </div>
+        <div class="boot-terminal">
+            <div id="boot-log-1">[KERNEL] Mounting Core Architecture...</div>
+            <div id="boot-log-2" class="hidden">[SYSTEM] Allocating Memory Heaps... OK.</div>
+            <div id="boot-log-3" class="hidden">[API] Handshaking with Python Backend...</div>
+            <div id="boot-log-4" class="hidden">[WIDGETS] Loading Desktop Modules...</div>
+            <div id="boot-log-5" class="hidden">[UI] Display Matrix Online. Welcome, Sir.</div>
+        </div>
+        <div class="boot-progress-bar">
+            <div id="boot-progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- Voice greeting caption (populated + shown by JARVIS.Voice) -->
+    <div id="voice-caption" class="hidden"></div>
+
+    <!-- =======================================================================
+         4. DESKTOP WORKSPACE & WIDGET LAYER
+         ======================================================================= -->
+    <main id="desktop-workspace">
+
+        <div id="widget-dashboard" class="widget-layer">
+            <!-- Widget cards get injected here once your API returns widget manifests -->
+        </div>
+
+        <div id="dynamic-folders-container"></div>
+
+        <div id="desktop-icons" class="desktop-grid"></div>
+
+    </main>
+
+    <!-- =======================================================================
+         5. J.A.R.V.I.S. START MENU
+         ======================================================================= -->
+    <div id="start-menu" class="hidden">
+        <div class="start-header">
+            <div class="search-box-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="start-search" placeholder="Search systems, apps, widgets..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+        <div class="start-body">
+            <div class="start-section-title">Pinned Applications</div>
+            <div class="start-apps-grid" id="start-app-list"></div>
+
+            <div class="start-section-title" style="margin-top:20px;">Available Widgets</div>
+            <div class="start-widgets-grid" id="start-widget-list"></div>
+        </div>
+        <div class="start-footer">
+            <div class="start-user-info">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <span class="user-name">Creator Admin</span>
+                    <span class="user-status">Root Privileges</span>
+                </div>
+            </div>
+            <div class="power-controls">
+                <button class="sys-power-btn" id="btn-lock" title="Lock System">🔒</button>
+                <button class="sys-power-btn" id="btn-shutdown" title="Shutdown OS">⏻</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         6. SYSTEM TASKBAR
+         ======================================================================= -->
+    <footer id="taskbar">
+        <button id="start-btn" class="sys-btn" title="Open Start Menu">
+            <span class="sys-icon">◈</span> MARK-8
+        </button>
+
+        <div id="dock-apps"></div>
+
+        <div id="system-tray">
+            <span id="network-indicator" title="API Status">📶</span>
+            <span id="weather-display" title="Live Weather">
+                <span id="weather-icon">--</span>
+                <span id="weather-temp">--°</span>
+            </span>
+            <span id="battery-display" title="System Power">🔋 --%</span>
+            <span id="date-display" title="Date"></span>
+            <span id="clock-display" title="System Clock">--:-- --</span>
+        </div>
+    </footer>
+
+    <!-- =======================================================================
+         7. NOTIFICATION CENTER (TOASTS)
+         ======================================================================= -->
+    <div id="notification-center"></div>
+
+    <!-- =======================================================================
+         8. GLOBAL CONTEXT MENUS (Right-click / Long-press)
+         ======================================================================= -->
+    <div id="os-context-menu" class="hidden">
+        <ul class="context-menu-list" id="context-menu-list"></ul>
+    </div>
+
+    <!-- =======================================================================
+         9. MODULAR SCRIPTS — load order matters, each depends on the last
+         ======================================================================= -->
+    <!-- 1. Kernel: State, Logger, Diagnostics, API client, boot sequence -->
+    <script src="js/jarvis-api-client.js"></script>
+    <!-- 2. UI Engine: Audio, background canvas, start menu, clock/battery/weather, voice -->
+    <script src="js/os-ui-engine.js"></script>
+    <!-- 3. Window Manager: window creation, dragging, dock -->
+    <script src="js/window-manager.js"></script>
+    <!-- 4. Desktop Engine: context menu, folders, icon drag/drop -->
+    <script src="js/desktop-engine.js"></script>
+
+</body>
+</html>
