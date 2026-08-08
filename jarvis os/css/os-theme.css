@@ -1,0 +1,468 @@
+/* ==========================================================================
+   J.A.R.V.I.S. OS THEME ENGINE (v8.6 - STABILITY PATCH)
+   CHANGES FROM v8.5:
+   - Every 100vh replaced with 100vh + 100dvh fallback (fixes Android
+     address-bar "eaten content" bug — dvh accounts for the real
+     visible viewport, vh does not)
+   - Added .weather-pulse animation for the weather icon
+   - Added #voice-caption styling for the boot greeting subtitle
+   ========================================================================== */
+
+/* ==========================================================================
+   01. GLOBAL VARIABLES & PALETTE
+   ========================================================================== */
+:root {
+    --cyan-core: #00f3ff;
+    --cyan-dim: rgba(0, 243, 255, 0.4);
+    --cyan-glow: 0 0 15px rgba(0, 243, 255, 0.6);
+    --gold-core: #ffcc00;
+    --gold-dim: rgba(255, 204, 0, 0.4);
+    --gold-glow: 0 0 15px rgba(255, 204, 0, 0.6);
+    --crimson-core: #ff3b30;
+    --crimson-dim: rgba(255, 59, 48, 0.4);
+    --matrix-green: #00ff66;
+
+    --bg-void: #010205;
+    --bg-dark: #050811;
+    --glass-light: rgba(20, 25, 40, 0.45);
+    --glass-base: rgba(10, 15, 29, 0.65);
+    --glass-heavy: rgba(5, 8, 17, 0.85);
+    --glass-border: rgba(0, 243, 255, 0.25);
+    --glass-border-dim: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+    --inner-glow: inset 0 0 20px rgba(0, 243, 255, 0.05);
+
+    --text-main: #e0f7fc;
+    --text-muted: #8892b0;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+    --font-mono: 'Consolas', 'Courier New', 'Monaco', monospace;
+
+    --taskbar-height: 56px;
+    --window-header: 44px;
+    --rad-sm: 6px;
+    --rad-md: 12px;
+    --rad-lg: 16px;
+}
+
+/* ==========================================================================
+   02. VIEWPORT LOCKS & BASE RESETS (CRITICAL FOR MOBILE)
+   ========================================================================== */
+*, *::before, *::after {
+    box-sizing: border-box; margin: 0; padding: 0;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+
+html, body {
+    width: 100vw; width: 100dvw;
+    height: 100vh; height: 100dvh; /* dvh wins on supporting browsers, vh is the fallback */
+    overflow: hidden; touch-action: none; overscroll-behavior: none;
+    background-color: var(--bg-void); font-family: var(--font-ui); color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    position: fixed; /* extra guard against iOS/Android rubber-band scroll */
+    top: 0; left: 0;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 4px; border: 1px solid var(--glass-border-dim); }
+::-webkit-scrollbar-thumb:hover { background: var(--cyan-core); }
+
+/* ==========================================================================
+   03. ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes pulse-glow { 0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 5px var(--cyan-core)); } 50% { opacity: 1; filter: drop-shadow(0 0 15px var(--cyan-core)); } }
+@keyframes window-spawn { 0% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); } }
+@keyframes windowClose { 0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); } 100% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(10px); } }
+@keyframes float-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes scanline { 0% { top: 0; opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { top: 100%; opacity: 0; } }
+@keyframes slideInRight { 0% { transform: translateX(120%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes weatherPulse { 0% { opacity: 0; transform: scale(0.6) rotate(-10deg); } 60% { opacity: 1; transform: scale(1.15) rotate(4deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes captionFade { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+/* ==========================================================================
+   04. BACKGROUND & BOOT SCREENS
+   ========================================================================== */
+#jarvis-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; width: 100dvw; height: 100vh; height: 100dvh;
+    z-index: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0.7;
+}
+
+body::after {
+    content: ''; position: fixed; top: 0; left: 0;
+    width: 100vw; width: 100dvw; height: 100vh; height: 100dvh;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 6px 100%; pointer-events: none; z-index: 9999999; opacity: 0.15;
+}
+
+#boot-screen {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; width: 100dvw; height: 100vh; height: 100dvh;
+    background: radial-gradient(circle at center, var(--bg-dark), var(--bg-void));
+    z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1), transform 1s;
+}
+#boot-screen.hide-boot { opacity: 0; transform: scale(1.1); pointer-events: none; }
+.boot-logo { font-size: 64px; font-weight: 900; color: #fff; letter-spacing: 15px; text-shadow: var(--cyan-glow); margin-bottom: 10px; }
+.boot-subtext { font-size: 16px; color: var(--cyan-core); letter-spacing: 8px; font-family: var(--font-mono); margin-bottom: 50px; opacity: 0.8; }
+.boot-terminal { width: 90%; max-width: 600px; height: 150px; font-family: var(--font-mono); font-size: 13px; color: var(--matrix-green); text-shadow: 0 0 5px rgba(0,255,102,0.5); margin-bottom: 30px; }
+.boot-terminal div { margin-bottom: 8px; transition: opacity 0.3s; }
+.boot-terminal div.hidden { display: none; }
+.boot-progress-bar { width: 80%; max-width: 500px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+#boot-progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--cyan-core); box-shadow: var(--cyan-glow); transition: width 0.3s ease; }
+
+/* Voice greeting caption */
+#voice-caption {
+    position: fixed; left: 50%; bottom: 12%; transform: translateX(-50%);
+    max-width: 80vw; padding: 10px 22px; border-radius: 30px;
+    background: rgba(0,0,0,0.55); border: 1px solid var(--cyan-dim);
+    color: var(--cyan-core); font-family: var(--font-mono); font-size: 14px;
+    letter-spacing: 0.5px; text-align: center; z-index: 1000001;
+    box-shadow: var(--cyan-glow); animation: captionFade 0.3s ease forwards;
+}
+#voice-caption.hidden { display: none; }
+
+/* KERNEL PANIC SCREEN */
+#system-crash-screen {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; width: 100dvw; height: 100vh; height: 100dvh;
+    background: #000088; color: #fff; font-family: var(--font-mono); z-index: 10000000;
+    display: flex; align-items: center; justify-content: center; padding: 40px;
+}
+#system-crash-screen.hidden { display: none; }
+.crash-content h1 { font-size: 5vw; margin-bottom: 20px; background: #fff; color: #000088; display: inline-block; padding: 5px 15px; }
+.crash-content p { font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
+#crash-error-log { background: rgba(0,0,0,0.3); padding: 20px; border-left: 5px solid #fff; font-size: 14px; margin-bottom: 30px; word-wrap: break-word; }
+#btn-reboot-system { background: #fff; color: #000088; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+#btn-reboot-system:active { transform: scale(0.95); }
+
+/* ==========================================================================
+   05. DESKTOP, FOLDERS & APP GRID
+   ========================================================================== */
+#desktop-workspace {
+    position: relative; width: 100vw; width: 100dvw;
+    height: calc(100vh - var(--taskbar-height)); height: calc(100dvh - var(--taskbar-height));
+    z-index: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden;
+}
+
+#desktop-icons, #dynamic-folders-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    grid-auto-rows: min-content; gap: 25px 15px; width: 100%; max-width: 500px;
+}
+
+.app-shortcut { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 80px; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); touch-action: none; }
+.app-shortcut:hover { transform: translateY(-5px); }
+.app-shortcut:active { transform: scale(0.9); }
+.app-shortcut.app-dragging { opacity: 0.7; z-index: 9999; pointer-events: none; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.6)); transform: scale(1.1) !important; }
+
+.app-icon-wrapper {
+    width: 60px; height: 60px; background: var(--glass-base); border: 1px solid var(--glass-border);
+    border-radius: var(--rad-lg); display: flex; align-items: center; justify-content: center;
+    font-size: 28px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5), var(--inner-glow); transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.app-icon-wrapper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%); border-radius: var(--rad-lg) var(--rad-lg) 0 0; }
+.app-shortcut:hover .app-icon-wrapper { border-color: var(--cyan-core); box-shadow: var(--cyan-glow), inset 0 0 20px var(--cyan-dim); background: rgba(10, 15, 29, 0.9); }
+
+.app-name {
+    margin-top: 8px; font-size: 12px; font-weight: 600; text-align: center; color: var(--text-main);
+    text-shadow: 0 2px 5px #000; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px;
+}
+
+.folder-drop-target .app-icon-wrapper { border-color: var(--gold-core) !important; box-shadow: var(--gold-glow) !important; transform: scale(1.1); background: rgba(255,204,0,0.1); }
+.folder-icon-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; width: 40px; height: 40px; padding: 2px; }
+.folder-mini-icon { font-size: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); border-radius: 4px; }
+
+/* ==========================================================================
+   06. WIDGET ENGINE (On Desktop)
+   ========================================================================== */
+.widget-layer {
+    position: absolute; top: 20px; right: 20px; bottom: 20px; width: 320px;
+    display: flex; flex-direction: column; gap: 20px; pointer-events: none; z-index: 50;
+}
+.os-widget {
+    background: var(--glass-base); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: var(--rad-lg); padding: 20px; color: var(--text-main);
+    box-shadow: var(--glass-shadow); pointer-events: auto; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
+}
+.os-widget:active { cursor: grabbing; transform: scale(0.98); }
+.os-widget::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); animation: shimmer 5s infinite; }
+@keyframes shimmer { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+.widget-time { font-size: 42px; font-weight: 900; font-family: var(--font-mono); color: var(--cyan-core); text-shadow: var(--cyan-glow); line-height: 1; margin-bottom: 5px; }
+.widget-date { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ==========================================================================
+   07. WINDOW MANAGER CORE
+   ========================================================================== */
+.glass-window {
+    position: absolute; top: 10vh; left: 10vw;
+    width: 400px; height: 550px; max-width: 95vw; max-height: 85vh;
+    max-width: 95dvw; max-height: 85dvh;
+    background: var(--glass-heavy); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
+    border: 1px solid var(--glass-border); border-radius: var(--rad-lg); display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: var(--glass-shadow), 0 0 0 1px rgba(0, 243, 255, 0.1);
+    animation: window-spawn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.glass-window.active-window { border-color: var(--cyan-core); box-shadow: var(--glass-shadow), 0 0 15px var(--cyan-dim); }
+.glass-window.closing { animation: windowClose 0.2s ease forwards; }
+
+.glass-window.maximized {
+    top: 0 !important; left: 0 !important; width: 100vw !important;
+    height: calc(100dvh - var(--taskbar-height)) !important;
+    max-width: 100vw; max-width: 100dvw; max-height: 100vh; max-height: 100dvh;
+    border-radius: 0; border: none; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.window-header {
+    height: var(--window-header); background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.3) 100%);
+    border-bottom: 1px solid var(--glass-border-dim); display: flex; align-items: center; justify-content: space-between;
+    padding: 0 15px; cursor: grab; touch-action: none; flex-shrink: 0;
+}
+.window-header:active { cursor: grabbing; background: rgba(0, 243, 255, 0.1); }
+.window-title { color: var(--text-main); font-size: 13px; font-weight: 700; letter-spacing: 1px; font-family: var(--font-mono); text-transform: uppercase; text-shadow: 0 0 8px var(--cyan-dim); display: flex; align-items: center; gap: 8px; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.window-title::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--cyan-core); border-radius: 50%; box-shadow: 0 0 6px var(--cyan-core); flex-shrink: 0; }
+
+.window-controls { display: flex; gap: 14px; align-items: center; flex-shrink: 0; }
+.win-btn { width: 16px; height: 16px; border: none; border-radius: 4px; background-color: transparent; background-size: 12px 12px; background-position: center; background-repeat: no-repeat; cursor: pointer; opacity: 0.6; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.win-btn:hover { opacity: 1; background-color: rgba(255,255,255,0.1); transform: scale(1.15); }
+.win-btn:active { transform: scale(0.9); }
+.btn-min { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffcc00' stroke-width='3'%3E%3Cline x1='4' y1='12' x2='20' y2='12'%3E%3C/line%3E%3C/svg%3E"); }
+.btn-min:hover { box-shadow: inset 0 0 8px var(--gold-dim); }
+.btn-max { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f3ff' stroke-width='2'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3C/svg%3E"); }
+.btn-max:hover { box-shadow: inset 0 0 8px var(--cyan-dim); }
+.btn-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff3b30' stroke-width='3'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E"); }
+.btn-close:hover { background-color: rgba(255, 59, 48, 0.2); box-shadow: inset 0 0 8px var(--crimson-dim); }
+
+.window-content { flex-grow: 1; background: rgba(0, 0, 0, 0.4); overflow-y: auto; overflow-x: hidden; position: relative; box-shadow: inset 0 5px 15px rgba(0,0,0,0.6); display: flex; flex-direction: column; touch-action: pan-y; }
+
+/* ==========================================================================
+   08. START MENU & SEARCH ENGINE
+   ========================================================================== */
+#start-menu {
+    position: fixed; bottom: calc(var(--taskbar-height) + 10px); left: 15px;
+    width: 400px; max-width: calc(100vw - 30px); max-width: calc(100dvw - 30px);
+    height: 600px; max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px);
+    background: var(--glass-heavy); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+    border: 1px solid var(--glass-border); border-radius: var(--rad-lg);
+    box-shadow: var(--glass-shadow), 0 0 40px rgba(0, 243, 255, 0.15); z-index: 999998;
+    display: flex; flex-direction: column; overflow: hidden; transform-origin: bottom left;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#start-menu.hidden { opacity: 0; transform: scale(0.95) translateY(30px); pointer-events: none; }
+
+.start-header { padding: 25px 25px 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
+.search-box-container { position: relative; width: 100%; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.7; }
+#start-search {
+    width: 100%; padding: 14px 15px 14px 45px; border-radius: 30px;
+    background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); color: #fff;
+    outline: none; font-family: var(--font-ui); font-size: 14px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.6); transition: 0.3s;
+}
+#start-search:focus { border-color: var(--cyan-core); box-shadow: 0 0 20px var(--cyan-dim); background: rgba(0,0,0,0.8); }
+
+.start-body { flex-grow: 1; padding: 25px; overflow-y: auto; touch-action: pan-y; }
+.start-section-title { font-size: 12px; color: var(--cyan-core); text-transform: uppercase; margin-bottom: 20px; font-weight: bold; letter-spacing: 2px; }
+
+.start-apps-grid, .start-widgets-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 15px; }
+.start-app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: var(--rad-sm); transition: 0.2s; }
+.start-app-item:hover { background: rgba(255,255,255,0.1); transform: translateY(-4px); }
+.start-app-icon { font-size: 36px; margin-bottom: 10px; text-shadow: 0 0 15px rgba(255,255,255,0.2); transition: 0.2s; }
+.start-app-item:hover .start-app-icon { transform: scale(1.1); }
+.start-app-name { font-size: 12px; text-align: center; color: var(--text-main); font-weight: 500; }
+.start-empty-msg { grid-column: 1 / -1; text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px 0; }
+
+.start-footer {
+    display: flex; justify-content: space-between; align-items: center; padding: 20px 25px;
+    background: rgba(0,0,0,0.6); border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
+}
+.start-user-info { display: flex; align-items: center; gap: 15px; }
+.user-avatar { width: 42px; height: 42px; background: rgba(0,243,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid var(--cyan-core); box-shadow: var(--cyan-glow); }
+.user-details { display: flex; flex-direction: column; }
+.user-name { font-size: 14px; font-weight: bold; }
+.user-status { font-size: 11px; color: var(--matrix-green); font-family: var(--font-mono); margin-top: 2px; }
+.power-controls { display: flex; gap: 15px; }
+.sys-power-btn { background: transparent; border: none; font-size: 22px; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 8px; }
+.sys-power-btn:hover { background: rgba(255,255,255,0.1); }
+#btn-lock { color: var(--gold-core); } #btn-lock:hover { color: #fff; text-shadow: var(--gold-glow); transform: scale(1.1); }
+#btn-shutdown { color: var(--crimson-core); } #btn-shutdown:hover { color: #fff; text-shadow: 0 0 15px var(--crimson-core); transform: scale(1.1); }
+
+/* ==========================================================================
+   09. TASKBAR & DOCK ENGINE
+   ========================================================================== */
+#taskbar {
+    position: fixed; bottom: 0; left: 0; width: 100vw; width: 100dvw; height: var(--taskbar-height);
+    background: var(--glass-heavy); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    border-top: 1px solid var(--glass-border); display: flex; align-items: center; padding: 0 15px; z-index: 999999;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.7);
+}
+#taskbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-core), transparent); opacity: 0.6; }
+
+#start-btn {
+    padding: 10px 20px; background: linear-gradient(135deg, rgba(0,243,255,0.15) 0%, rgba(0,0,0,0.5) 100%);
+    border: 1px solid var(--cyan-core); border-radius: 8px; color: var(--cyan-core); font-weight: 900;
+    font-size: 14px; letter-spacing: 2px; font-family: var(--font-mono); cursor: pointer; box-shadow: 0 0 12px var(--cyan-dim);
+    transition: all 0.2s; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 5px var(--cyan-core); flex-shrink: 0;
+}
+#start-btn .sys-icon { font-size: 18px; animation: spin 8s linear infinite; display: inline-block; }
+#start-btn:hover { background: rgba(0, 243, 255, 0.25); box-shadow: var(--cyan-glow); transform: translateY(-2px); }
+#start-btn:active { transform: translateY(1px) scale(0.95); }
+
+#dock-apps { display: flex; gap: 12px; flex-grow: 1; margin: 0 25px; overflow-x: auto; scrollbar-width: none; align-items: center; padding: 5px 0; touch-action: pan-x; }
+#dock-apps::-webkit-scrollbar { display: none; }
+.dock-icon {
+    min-width: 44px; height: 44px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border-dim);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; flex-shrink: 0;
+}
+.dock-icon:hover { background: rgba(0,243,255,0.1); border-color: var(--cyan-core); transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2); }
+.dock-icon.active::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 24px; height: 4px; background: var(--cyan-core); border-radius: 4px; box-shadow: 0 0 8px var(--cyan-core); }
+
+#system-tray { display: flex; align-items: center; gap: 15px; font-size: 13px; font-family: var(--font-mono); color: var(--text-main); background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: var(--rad-md); border: 1px solid var(--glass-border-dim); flex-shrink: 0; }
+#system-tray > span { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: 0.2s; }
+#system-tray > span:hover { background: rgba(255,255,255,0.1); }
+#weather-display { background: rgba(0, 243, 255, 0.05); color: var(--cyan-core); }
+#weather-icon.weather-pulse { animation: weatherPulse 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block; }
+#clock-display { font-weight: bold; letter-spacing: 1px; }
+
+/* ==========================================================================
+   10. TOAST NOTIFICATIONS & CONTEXT MENUS
+   ========================================================================== */
+#notification-center { position: fixed; top: 20px; right: 20px; width: 340px; max-width: calc(100vw - 40px); display: flex; flex-direction: column; gap: 12px; z-index: 9999999; pointer-events: none; }
+.toast-notification {
+    background: var(--glass-heavy); border-left: 4px solid var(--cyan-core); border-radius: 6px; padding: 18px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6); backdrop-filter: blur(15px); color: #fff; pointer-events: auto;
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden;
+}
+.toast-notification.error { border-left-color: var(--crimson-core); }
+.toast-notification.success { border-left-color: var(--matrix-green); }
+.toast-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; font-family: var(--font-ui); }
+.toast-msg { font-size: 13px; color: var(--text-muted); line-height: 1.5; font-family: var(--font-mono); }
+
+#os-context-menu {
+    position: fixed; background: rgba(15, 20, 35, 0.95); backdrop-filter: blur(25px); border: 1px solid var(--glass-border-dim);
+    border-radius: var(--rad-sm); box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 0 1px var(--cyan-dim); z-index: 9999999; width: 240px; padding: 8px 0;
+    transform-origin: top left; animation: window-spawn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#os-context-menu.hidden { display: none; }
+.context-menu-list { list-style: none; }
+.context-item { padding: 12px 18px; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: 0.15s; }
+.context-item:hover { background: rgba(0, 243, 255, 0.15); color: var(--cyan-core); }
+.context-icon { font-size: 16px; width: 20px; text-align: center; }
+.context-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--glass-border-dim), transparent); margin: 6px 0; }
+
+/* ==========================================================================
+   11. APP SPECIFIC STYLES: TERMINAL
+   ========================================================================== */
+.app-terminal { font-family: var(--font-mono); color: var(--matrix-green); height: 100%; display: flex; flex-direction: column; background: rgba(0,2,0,0.9); padding: 20px; position: relative; }
+.app-terminal::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%); background-size: 100% 4px; pointer-events: none; z-index: 2; }
+.term-output { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 14px; text-shadow: 0 0 6px rgba(0, 255, 102, 0.5); z-index: 1; touch-action: pan-y; }
+.term-input-line { display: flex; gap: 12px; align-items: center; border-top: 1px dashed rgba(0, 255, 102, 0.4); padding-top: 15px; z-index: 1; }
+.term-input { background: transparent; border: none; outline: none; color: #fff; font-family: var(--font-mono); flex-grow: 1; font-size: 15px; caret-color: var(--matrix-green); }
+
+/* ==========================================================================
+   12. APP SPECIFIC STYLES: FILES EXPLORER
+   ========================================================================== */
+.app-files { display: flex; height: 100%; background: rgba(0,0,0,0.2); }
+.files-sidebar { width: 140px; background: rgba(0,0,0,0.4); border-right: 1px solid var(--glass-border-dim); padding: 15px 0; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.files-sidebar-item { padding: 10px 20px; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+.files-sidebar-item:hover, .files-sidebar-item.active { background: rgba(0,243,255,0.1); color: var(--cyan-core); border-left: 3px solid var(--cyan-core); }
+.files-body { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+.files-toolbar { height: 50px; border-bottom: 1px solid var(--glass-border-dim); display: flex; align-items: center; padding: 0 20px; gap: 15px; background: rgba(255,255,255,0.02); flex-shrink: 0; }
+.fm-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border-dim); color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+.fm-btn:hover { border-color: var(--cyan-core); box-shadow: 0 0 10px var(--cyan-dim); }
+.files-grid { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 20px; flex-grow: 1; overflow-y: auto; touch-action: pan-y; }
+.file-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 8px; transition: 0.2s; position: relative; }
+.file-item:hover { background: rgba(255,255,255,0.05); }
+.file-icon { font-size: 36px; margin-bottom: 10px; text-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+.file-name { font-size: 12px; text-align: center; word-break: break-all; }
+.file-delete-btn { position: absolute; top: -5px; right: -5px; background: var(--crimson-core); color: #fff; border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; cursor: pointer; opacity: 0; transition: 0.2s; box-shadow: 0 0 8px var(--crimson-core); }
+.file-item:hover .file-delete-btn { opacity: 1; }
+
+/* ==========================================================================
+   13. APP SPECIFIC STYLES: SETTINGS / MY JARVIS
+   ========================================================================== */
+.app-settings { padding: 30px; overflow-y: auto; height: 100%; touch-action: pan-y; }
+.settings-header { font-size: 24px; color: var(--cyan-core); margin-bottom: 25px; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 10px; }
+.settings-group { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border-dim); border-radius: var(--rad-md); padding: 20px; margin-bottom: 20px; }
+.settings-group-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; letter-spacing: 1px; }
+.setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 15px; }
+.setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+.setting-label { font-size: 14px; }
+.toggle-switch { position: relative; width: 50px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); border: 1px solid var(--glass-border-dim); transition: .4s; border-radius: 34px; }
+.toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; }
+.toggle-switch input:checked + .toggle-slider { background-color: var(--cyan-core); border-color: var(--cyan-core); box-shadow: var(--cyan-glow); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+/* ==========================================================================
+   14. APP SPECIFIC STYLES: APP STORE
+   ========================================================================== */
+.app-store { display: flex; flex-direction: column; height: 100%; }
+.store-hero { height: 180px; background: linear-gradient(45deg, #1a0033, #001a33); position: relative; overflow: hidden; display: flex; align-items: center; padding: 30px; border-bottom: 1px solid var(--glass-border-dim); flex-shrink: 0; }
+.store-hero h1 { font-size: 32px; color: #fff; text-shadow: 0 0 15px #ff00ff; z-index: 1; }
+.store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 25px; overflow-y: auto; touch-action: pan-y; }
+.store-card { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border-dim); border-radius: var(--rad-md); padding: 20px; display: flex; gap: 15px; align-items: center; transition: 0.2s; }
+.store-card:hover { border-color: var(--cyan-dim); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.store-card-icon { font-size: 42px; width: 70px; height: 70px; background: rgba(255,255,255,0.05); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.store-card-info { flex-grow: 1; min-width: 0; }
+.store-card-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+.store-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.btn-install { background: var(--cyan-core); color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px var(--cyan-dim); }
+.btn-install:hover { transform: scale(1.05); box-shadow: var(--cyan-glow); }
+
+/* ==========================================================================
+   15. APP SPECIFIC STYLES: CAMERA & GALLERY
+   ========================================================================== */
+.app-camera { background: #000; height: 100%; position: relative; display: flex; flex-direction: column; }
+.camera-viewfinder { flex-grow: 1; background: #111; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.camera-viewfinder::after { content: '[ CAMERA MODULE OFFLINE - AWAITING API ]'; font-family: var(--font-mono); color: red; font-size: 12px; text-align: center; padding: 0 20px; }
+.camera-controls { height: 100px; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: space-around; padding: 0 20px; flex-shrink: 0; }
+.btn-capture { width: 64px; height: 64px; border-radius: 50%; background: #fff; border: 4px solid #aaa; cursor: pointer; transition: 0.2s; }
+.btn-capture:active { transform: scale(0.9); background: #ccc; }
+.btn-cam-switch { font-size: 24px; color: #fff; background: none; border: none; cursor: pointer; }
+
+.app-gallery { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; overflow-y: auto; height: 100%; touch-action: pan-y; }
+.gallery-item { aspect-ratio: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border-dim); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.gallery-item:hover { border-color: var(--cyan-core); transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.gallery-btn-wallpaper { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: #fff; border: 1px solid var(--cyan-dim); font-size: 10px; padding: 4px 8px; border-radius: 4px; opacity: 0; transition: 0.2s; }
+.gallery-item:hover .gallery-btn-wallpaper { opacity: 1; }
+
+/* ==========================================================================
+   16. MOBILE OPTIMIZATIONS
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    :root { --taskbar-height: 64px; }
+
+    .glass-window { width: 92vw; width: 92dvw; height: 80vh; height: 80dvh; left: 4vw; top: 5vh; border-radius: var(--rad-md); }
+
+    #desktop-icons, #dynamic-folders-container { max-width: 100%; gap: 30px 15px; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); }
+    .app-icon-wrapper { width: 64px; height: 64px; font-size: 32px; }
+
+    #start-menu {
+        width: 96vw; width: 96dvw; height: 85vh; height: 85dvh;
+        left: 2vw; bottom: calc(var(--taskbar-height) + 5px); border-radius: var(--rad-md);
+    }
+    .start-apps-grid, .start-widgets-grid { grid-template-columns: repeat(4, 1fr); gap: 20px 5px; }
+
+    #system-tray { gap: 8px; padding: 5px 10px; }
+    #date-display { display: none; }
+    #start-btn { padding: 8px 12px; font-size: 12px; }
+    #start-btn .sys-icon { font-size: 16px; }
+
+    .widget-layer { width: auto; left: 20px; right: 20px; top: 20px; }
+
+    #os-context-menu { width: 200px; }
+    .context-item { padding: 14px 18px; font-size: 14px; }
+
+    #voice-caption { font-size: 13px; max-width: 88vw; bottom: calc(var(--taskbar-height) + 15px); }
+}
+
+/* ==========================================================================
+   17. REDUCED MOTION SUPPORT
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
