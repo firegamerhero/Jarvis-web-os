@@ -1,0 +1,105 @@
+/* =========================================
+   JARVIS WebOS - Theme & Background Presets
+   ========================================= */
+
+/* --- Default Blue Theme (Arc Blue) --- */
+body.theme-blue, :root {
+    --primary-color: #00f0ff;
+    --primary-dim: rgba(0, 240, 255, 0.18);
+    --glass-bg: rgba(2, 6, 23, 0.72);
+    --glass-border: rgba(0, 240, 255, 0.45);
+    --glow-shadow: 0 0 18px rgba(0, 240, 255, 0.45);
+    --text-main: #e2f1f8;
+    --text-muted: #8da9c4;
+}
+
+/* --- Crimson Red Theme (Iron Man / Protocol 11) --- */
+body.theme-red {
+    --primary-color: #ff2a2a;
+    --primary-dim: rgba(255, 42, 42, 0.2);
+    --glass-bg: rgba(20, 3, 5, 0.75);
+    --glass-border: rgba(255, 42, 42, 0.5);
+    --glow-shadow: 0 0 18px rgba(255, 42, 42, 0.5);
+    --text-main: #ffe5e5;
+    --text-muted: #d68f8f;
+}
+
+/* --- Matrix Green Theme --- */
+body.theme-green {
+    --primary-color: #00ff88;
+    --primary-dim: rgba(0, 255, 136, 0.18);
+    --glass-bg: rgba(2, 18, 10, 0.75);
+    --glass-border: rgba(0, 255, 136, 0.45);
+    --glow-shadow: 0 0 18px rgba(0, 255, 136, 0.45);
+    --text-main: #e2ffe8;
+    --text-muted: #8cd4a4;
+}
+
+/* =========================================
+   Background Presets
+   ========================================= */
+
+/* Background 1: Deep Nebula (Default) */
+body.bg-1 {
+    background: radial-gradient(circle at center, #0b1528 0%, #020617 100%);
+}
+
+/* Background 2: Cyber Grid Core */
+body.bg-2 {
+    background-color: #030814;
+    background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* Background 3: Void Matrix */
+body.bg-3 {
+    background: radial-gradient(ellipse at bottom, #0d1f14 0%, #000000 100%);
+}
+
+/* =========================================
+   DANGEROUS Performance Mode Animation
+   ========================================= */
+
+body.dangerous-mode {
+    --primary-color: #ff003c;
+    --primary-dim: rgba(255, 0, 60, 0.35);
+    --glass-border: rgba(255, 0, 60, 0.8);
+    --glow-shadow: 0 0 25px rgba(255, 0, 60, 0.8);
+    animation: screenGlitchPulse 0.8s infinite alternate;
+}
+
+@keyframes screenGlitchPulse {
+    0% {
+        box-shadow: inset 0 0 40px rgba(255, 0, 60, 0.4);
+        filter: contrast(105%) brightness(100%);
+    }
+    100% {
+        box-shadow: inset 0 0 90px rgba(255, 0, 60, 0.85);
+        filter: contrast(120%) brightness(115%);
+    }
+}
+
+/* Overdrive Warning Banner when Activated */
+.overdrive-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 0, 60, 0.85);
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 10px 24px;
+    border-radius: 6px;
+    box-shadow: 0 0 30px #ff003c;
+    z-index: 10000;
+    pointer-events: none;
+    animation: bounceAlert 0.4s ease-out;
+}
+
+@keyframes bounceAlert {
+    0% { opacity: 0; transform: translate(-50%, -30px) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}

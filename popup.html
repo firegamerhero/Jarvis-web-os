@@ -1,0 +1,147 @@
+<!-- Master Overlay for the whole popup sequence -->
+<div id="jarvis-popup-overlay" style="position: fixed; inset: 0; z-index: 5000; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); pointer-events: auto;">
+
+    <!-- ========================================== -->
+    <!-- STEP 1: THE WARNING MESSAGE                -->
+    <!-- ========================================== -->
+    <div id="warning-box" style="width: 400px; background: rgba(20, 3, 5, 0.9); border: 2px solid var(--danger); border-radius: 12px; box-shadow: 0 0 30px rgba(255, 0, 60, 0.4), inset 0 0 20px rgba(255, 0, 60, 0.2); text-align: center; padding: 30px; animation: popInWarning 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), pulseDanger 1.5s infinite alternate;">
+        
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 3.5rem; color: var(--danger); margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--danger));"></i>
+        
+        <h2 style="color: var(--danger); font-family: monospace; letter-spacing: 2px; margin-bottom: 15px;">INCOMING TRANSMISSION</h2>
+        
+        <p style="color: #ffcccc; font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px; font-family: 'Segoe UI', sans-serif;">
+            Warning: There is a secure message for you. You must read it before continuing.
+        </p>
+        
+        <button id="btn-warning-ok" style="padding: 12px 40px; background: rgba(255, 0, 60, 0.2); border: 2px solid var(--danger); color: var(--danger); font-family: monospace; font-size: 1.2rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; text-shadow: 0 0 5px var(--danger);">
+            OK
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STEP 2: THE MAIN MESSAGE (WITH SCROLLING)  -->
+    <!-- ========================================== -->
+    <div id="main-box" style="display: none; width: 600px; max-width: 90vw; height: 500px; max-height: 80vh; background: rgba(2, 6, 23, 0.9); border: 1px solid var(--primary-color); border-radius: 12px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.1); flex-direction: column; overflow: hidden; transform: scaleY(0);">
+        
+        <!-- Header -->
+        <div style="background: rgba(0, 240, 255, 0.15); padding: 15px 20px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-envelope-open-text" style="color: var(--primary-color); font-size: 1.4rem;"></i>
+            <span style="color: var(--primary-color); font-family: monospace; font-size: 1.1rem; font-weight: bold; letter-spacing: 2px;">SECURE MESSAGE PROTOCOL</span>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="custom-scroll-area" style="flex: 1; padding: 20px; overflow: auto; position: relative;">
+            
+            <!-- We make this container wider (150%) and taller to force left/right and up/down scrolling! -->
+            <div style="width: 150%; padding-bottom: 50px;">
+                <h2 style="color: var(--primary-color); margin-bottom: 20px; font-weight: normal; font-size: 1.8rem;">Captain's Log</h2>
+                
+                <p style="color: var(--text-muted); font-family: monospace; font-size: 1.1rem; line-height: 1.8;">
+                    <!-- ✏️ WRITE YOUR CUSTOM MESSAGE HERE ✏️ -->
+                   hi testers i am firegamerhero i am struggling a lot its a incomplte work because i am makeing it with my phone using github codespace got my limit reqch now i can,t code and can not continue my journy and my financial conditon is very bad and no one is with me i thougth this will help me buy laptop but i was wrong i want a laptop to continue this work not only this for my studies and for my coding path and i know your rulws you can,t and in this frustration i have cutten my hand and writing and working with my left hand is very hard and i want a laptop that i can,t buy so if you can pls help me get a laptop it cost around 1600 dollars less i defenetly needed that for my carrer but i am not able to code get one and cosing via a budget phone is very very hard heres my email --> firegamerhero5@gmail.com if you can help email me and i wanna just say reject this i know will help me and never will i need help but i am lonly depressed but what i can do other then ending everything and heres my last request reject it or accpet it idc i only care for my carrer and future that can,t be continjed due to my financial condtion thats why i am wrtting this messege to get a last help before ending things talking abkut carrer
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 15px 25px; background: rgba(0,0,0,0.6); display: flex; justify-content: flex-end; border-top: 1px solid rgba(0, 240, 255, 0.2);">
+            <button id="btn-main-close" style="padding: 12px 35px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--primary-color); color: var(--primary-color); font-family: monospace; font-weight: bold; font-size: 1.1rem; border-radius: 6px; cursor: pointer; transition: 0.3s;">
+                ACKNOWLEDGE & CLOSE
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* WARNING ANIMATIONS */
+    @keyframes popInWarning {
+        0% { opacity: 0; transform: scale(0.5); }
+        80% { transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes pulseDanger {
+        0% { box-shadow: 0 0 20px rgba(255, 0, 60, 0.4), inset 0 0 15px rgba(255, 0, 60, 0.2); }
+        100% { box-shadow: 0 0 50px rgba(255, 0, 60, 0.8), inset 0 0 30px rgba(255, 0, 60, 0.5); }
+    }
+    #btn-warning-ok:hover {
+        background: var(--danger) !important;
+        color: #fff !important;
+        box-shadow: 0 0 20px var(--danger);
+    }
+
+    /* MAIN BOX ANIMATIONS */
+    @keyframes unfoldMain {
+        0% { transform: scaleY(0.01) scaleX(0.5); opacity: 0; }
+        50% { transform: scaleY(0.01) scaleX(1); opacity: 1; }
+        100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+    }
+    @keyframes foldOutMain {
+        0% { transform: scaleY(1) scaleX(1); opacity: 1; }
+        50% { transform: scaleY(0.01) scaleX(1); opacity: 1; }
+        100% { transform: scaleY(0.01) scaleX(0.5); opacity: 0; }
+    }
+    #btn-main-close:hover {
+        background: var(--primary-color) !important;
+        color: #000 !important;
+        box-shadow: 0 0 20px var(--primary-color);
+    }
+
+    /* CUSTOM HOLOGRAPHIC SCROLLBARS (For Up/Down and Left/Right) */
+    .custom-scroll-area::-webkit-scrollbar {
+        width: 12px;  /* Width of vertical scrollbar */
+        height: 12px; /* Height of horizontal scrollbar */
+    }
+    .custom-scroll-area::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 6px;
+        border: 1px solid var(--primary-dim);
+    }
+    .custom-scroll-area::-webkit-scrollbar-thumb {
+        background: rgba(0, 240, 255, 0.4);
+        border-radius: 6px;
+        border: 1px solid var(--primary-color);
+    }
+    .custom-scroll-area::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-color);
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+    .custom-scroll-area::-webkit-scrollbar-corner {
+        background: transparent; /* Makes the bottom-right intersection clean */
+    }
+</style>
+
+<script>
+    const overlay = document.getElementById("jarvis-popup-overlay");
+    const warningBox = document.getElementById("warning-box");
+    const mainBox = document.getElementById("main-box");
+    
+    // Step 1: OK Button Clicked
+    document.getElementById("btn-warning-ok").addEventListener("click", () => {
+        // Fade out warning box
+        warningBox.style.transition = "opacity 0.3s, transform 0.3s";
+        warningBox.style.opacity = "0";
+        warningBox.style.transform = "scale(0.8)";
+        
+        setTimeout(() => {
+            warningBox.style.display = "none";
+            // Reveal Main Box with unfold animation
+            mainBox.style.display = "flex";
+            mainBox.style.animation = "unfoldMain 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards";
+        }, 300);
+    });
+
+    // Step 2: Acknowledge & Close Button Clicked
+    document.getElementById("btn-main-close").addEventListener("click", () => {
+        // Fold out main box
+        mainBox.style.animation = "foldOutMain 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards";
+        overlay.style.transition = "background 0.5s, backdrop-filter 0.5s";
+        overlay.style.background = "transparent";
+        overlay.style.backdropFilter = "blur(0px)";
+
+        // Completely remove from DOM after animation
+        setTimeout(() => {
+            document.getElementById("popup-container").innerHTML = "";
+        }, 500);
+    });
+</script>

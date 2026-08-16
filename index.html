@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS WebOS</title>
+    <!-- Core Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <!-- FontAwesome for OS Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- AUDIO & SYSTEM UNLOCK OVERLAY -->
+    <div id="start-overlay" style="position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+        <i class="fa-solid fa-power-off" style="font-size: 4rem; color: #00f0ff; margin-bottom: 20px; filter: drop-shadow(0 0 15px #00f0ff); animation: pulse 2s infinite;"></i>
+        <button id="btn-init-system" style="padding: 15px 30px; background: rgba(0, 240, 255, 0.1); border: 2px solid #00f0ff; color: #00f0ff; font-family: monospace; font-size: 1.5rem; font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.3s; text-shadow: 0 0 10px #00f0ff;">
+            INITIALIZE JARVIS
+        </button>
+    </div>
+
+    <!-- Video Background Layer (No autoplay attribute on empty src) -->
+    <video id="video-bg" loop muted playsinline style="display: none;"></video>
+
+    <!-- Animated Interactive Network Background -->
+    <canvas id="network-bg"></canvas>
+
+    <!-- Boot Sequence Screen -->
+    <div id="boot-screen" style="display: none; position: fixed; inset: 0; background-color: #000; z-index: 9999; justify-content: center; align-items: center; transition: opacity 1s ease-out;">
+        <div class="boot-content" style="text-align: center; color: #00f0ff;">
+            <i class="fa-solid fa-fingerprint boot-logo"></i>
+            <h1 class="glitch-text">JARVIS OS INITIALIZING</h1>
+            <p id="boot-log" style="font-family: monospace;">Loading core system modules...</p>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- Main Desktop Environment -->
+    <div id="desktop">
+        <div class="desktop-icon" data-app="myjarvis"><i class="fa-solid fa-microchip"></i><span>My JARVIS</span></div>
+        <div class="desktop-icon" data-app="codespace"><i class="fa-brands fa-python"></i><span>Code Space</span></div>
+        <div class="desktop-icon" data-app="filemgr"><i class="fa-solid fa-folder-tree"></i><span>File Manager</span></div>
+        <div class="desktop-icon" data-app="weather"><i class="fa-solid fa-cloud-sun-rain"></i><span>Radar</span></div>
+    </div>
+
+    <!-- Container where popup.html will be loaded -->
+    <div id="popup-container" style="position: fixed; inset: 0; z-index: 5000; pointer-events: none;"></div>
+
+    <!-- START MENU -->
+    <div id="start-menu">
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="sys-search" placeholder="Search system...">
+        </div>
+        <div class="start-apps-list">
+            <div class="start-app-item" data-app="myjarvis"><i class="fa-solid fa-microchip"></i> My JARVIS Core</div>
+            <div class="start-app-item" data-app="codespace"><i class="fa-brands fa-python"></i> Python Code Space</div>
+            <div class="start-app-item" data-app="filemgr"><i class="fa-solid fa-folder-tree"></i> File Manager</div>
+            <div class="start-app-item" data-app="clock"><i class="fa-solid fa-clock"></i> Chronometer</div>
+            <div class="start-app-item" data-app="calendar"><i class="fa-solid fa-calendar-days"></i> Calendar</div>
+            <div class="start-app-item" data-app="weather"><i class="fa-solid fa-cloud-sun-rain"></i> Radar</div>
+            <div class="start-app-item" data-app="calc"><i class="fa-solid fa-calculator"></i> Quantum Calculator</div>
+            <div class="start-app-item" data-app="notes"><i class="fa-solid fa-file-lines"></i> Notepad</div>
+        </div>
+    </div>
+
+    <!-- Bottom Taskbar -->
+    <div id="taskbar">
+        <div class="taskbar-left">
+            <button id="start-btn" title="System Menu"><i class="fa-solid fa-power-off"></i></button>
+            <div id="open-apps-dock"></div>
+        </div>
+        <div class="taskbar-right">
+            <div id="weather-widget" title="Local Weather"><i class="fa-solid fa-cloud-bolt"></i> <span id="weather-data">--°C</span></div>
+            <div id="battery-widget" title="System Power"><i class="fa-solid fa-battery-half"></i> <span id="battery-pct">--%</span></div>
+            <div id="clock-widget" title="System Time">
+                <span id="time-display">00:00</span>
+                <span id="date-display">--/--/----</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Core Scripts -->
+    <script src="network-bg.js"></script>
+    <script src="wm.js"></script>
+    <script src="taskbar.js"></script>
+    
+    <!-- App Modules -->
+    <script src="app-myjarvis.js"></script>
+    <script src="app-calc.js"></script>
+    <script src="app-notes.js"></script>
+    <script src="app-filemgr.js"></script>
+    <script src="app-codespace.js"></script>
+    <script src="app-clock.js"></script>
+    <script src="app-calendar.js"></script>
+    <script src="app-weather.js"></script>
+
+    <!-- INLINE BOOT & VOICE ENGINE -->
+    <script>
+        document.getElementById("btn-init-system").addEventListener("click", () => {
+            document.getElementById("start-overlay").style.display = "none";
+            const bootScreen = document.getElementById("boot-screen");
+            bootScreen.style.display = "flex";
+
+            const bootLog = document.getElementById("boot-log");
+            const progressFill = document.querySelector(".progress-fill");
+            const bootMessages = [
+                "ESTABLISHING SECURE CONNECTION...",
+                "LOADING HOLOGRAPHIC INTERFACE...",
+                "CALIBRATING NEURAL NETWORK...",
+                "ALL SYSTEMS NOMINAL."
+            ];
+
+            let step = 0;
+            function updateBoot() {
+                if (step < bootMessages.length) {
+                    bootLog.textContent = bootMessages[step];
+                    progressFill.style.width = `${((step + 1) / bootMessages.length) * 100}%`;
+                    step++;
+                    setTimeout(updateBoot, 500 + Math.random() * 400);
+                } else {
+                    setTimeout(finishBoot, 500);
+                }
+            }
+
+            function playJarvisVoice(text) {
+                if (!('speechSynthesis' in window)) return;
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.95;
+                utterance.pitch = 0.8;
+
+                const setVoiceAndSpeak = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices && voices.length > 0) {
+                        const preferred = voices.find(v => 
+                            v.name.includes("Google UK English Male") || 
+                            v.name.includes("Microsoft Mark") || 
+                            v.lang.startsWith("en")
+                        );
+                        if (preferred) utterance.voice = preferred;
+                    }
+                    window.speechSynthesis.speak(utterance);
+                };
+
+                if (window.speechSynthesis.getVoices().length === 0) {
+                    window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+                } else {
+                    setVoiceAndSpeak();
+                }
+            }
+
+            function finishBoot() {
+                playJarvisVoice("Welcome back Captain, all systems online.");
+
+                bootScreen.style.opacity = "0";
+                setTimeout(() => {
+                    bootScreen.style.display = "none";
+                    fetch('popup.html')
+                        .then(response => response.text())
+                        .then(data => {
+                            const container = document.getElementById('popup-container');
+                            container.innerHTML = data;
+                            Array.from(container.querySelectorAll('script')).forEach(oldScript => {
+                                const newScript = document.createElement('script');
+                                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                                oldScript.parentNode.replaceChild(newScript, oldScript);
+                            });
+                        })
+                        .catch(err => console.log("Popup loading bypassed:", err));
+                }, 1000); 
+            }
+            setTimeout(updateBoot, 400);
+        });
+    </script>
+</body>
+</html>
