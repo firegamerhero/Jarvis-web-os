@@ -52,8 +52,18 @@ jarvis-webos/
 
 
 
+# warning
+the project is in currently beta so expect bugs there are some bugs which needs a local host for some fixes
+and i will not going to fix any bugs or continue this project as my codespace limit has ended and i can,t afford a laptop if you can help me feel free to help it cost 1500$ i tequested to jams.hackclub but they will not give me for helping so don,t think it will be continue 
 
 
+
+
+
+# how to local host
+1 download all files put it in folder
+2open the folder double on index.html and click on run
+or use a code editor
 
 ## 📂 Project Architecture## 📂 Project Architecture
 Built with ❤️ for Hack Club.*
