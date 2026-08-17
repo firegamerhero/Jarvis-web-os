@@ -36,19 +36,6 @@ here some ways it support
 
 
 
-## 📂 Project Architecture
-jarvis-webos/
-├── assets/         # Sound FX, textures, static media
-├── css/            # Glassmorphism themes & HUD styles
-├── js/
-│   ├── app.js      # OS Core & Entry Point
-│   ├── window.js   # Window Manager & Drag/Drop Class
-│   ├── three-hud.js# 3D ARC Reactor Engine
-│   └── gesture.js  # MediaPipe Hand Tracking Handler
-├── backend/        # Python REST API for Gemini integration
-├── index.html      # Main OS Container
-└── README.md       # Documentation
-
 
 
 
